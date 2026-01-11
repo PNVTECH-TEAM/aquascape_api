@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+    <style>
+        body {
+            background: #f7f7f7;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            text-align: center;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #43a047;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Verify Email</h2>
+        <p>Đang xác thực email...</p>
+
+        <p id="status"></p>
+
+        <button id="back" onclick="window.location.href='/'">Quay lại trang chủ</button>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+
+        fetch(`http://localhost:8080/api/auth/verify?token=${token}`)
+            .then(res => res.text())
+            .then(msg => {
+                document.getElementById("status").innerHTML = msg;
+            })
+            .catch(() => {
+                document.getElementById("status").innerHTML = "Token không hợp lệ hoặc đã hết hạn.";
+            });
+    </script>
+</body>
+
+</html>
