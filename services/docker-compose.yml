@@ -1,0 +1,92 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+
+  user-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${USER_DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${APP_DB_NAME:-app_db}
+    ports:
+      - "3306:3306"
+    volumes:
+      - user_db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  user-service:
+    build: ./user-service
+    environment:
+      USER_DB_HOST: user-db
+      USER_DB_USERNAME: ${USER_DB_USERNAME:-root}
+      USER_DB_PASSWORD: ${USER_DB_PASSWORD:-root}
+      USER_DB_URL: jdbc:mysql://user-db:3306/${APP_DB_NAME:-app_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=TRUE
+    depends_on:
+      - user-db
+    networks:
+      - app-network
+
+  auth-service:
+    build: ./auth-service
+    environment:
+      USER_SERVICE_URL: http://user-service:8081
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:-MY_SUPER_SECRET_KEY_123456789012345678901234}
+    depends_on:
+      - user-service
+      - rabbitmq
+    networks:
+      - app-network
+
+  notification-service:
+    build: ./notification-service
+    environment:
+      NOTIFY_DB_HOST: user-db
+      NOTIFY_DB_USERNAME: ${NOTIFY_DB_USERNAME:-root}
+      NOTIFY_DB_PASSWORD: ${NOTIFY_DB_PASSWORD:-root}
+      NOTIFY_DB_URL: jdbc:mysql://user-db:3306/${APP_DB_NAME:-app_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=TRUE
+      USER_SERVICE_URL: http://user-service:8081
+      VERIFY_URL_BASE: http://api-gateway:8080/api/verify
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    depends_on:
+      - user-db
+      - rabbitmq
+    networks:
+      - app-network
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      USER_SERVICE_URL: http://user-service:8081
+      AUTH_SERVICE_URL: http://auth-service:8082
+      NOTIFICATION_SERVICE_URL: http://notification-service:8083
+    depends_on:
+      - auth-service
+      - user-service
+      - notification-service
+    networks:
+      - app-network
+
+volumes:
+  user_db_data:
+
+networks:
+  app-network:

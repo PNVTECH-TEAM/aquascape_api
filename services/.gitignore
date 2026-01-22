@@ -1,0 +1,32 @@
+# General
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+
+# Node
+node_modules/
+
+# Maven / Java
+target/
+**/target/
+.classpath
+.project
+.settings/
+
+# Env / secrets
+.env
+**/.env
+*.secret
+settings.xml
+
+# Docker
+*.local
+*.tmp
+docker-compose.override.yml

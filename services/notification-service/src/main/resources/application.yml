@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: ${NOTIFY_DB_URL:jdbc:mysql://${NOTIFY_DB_HOST:localhost}:3306/notification_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=TRUE}
+    username: ${NOTIFY_DB_USERNAME:root}
+    password: ${NOTIFY_DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASS:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+server:
+  port: ${NOTIFICATION_SERVICE_PORT:8083}
+
+user-service:
+  base-url: ${USER_SERVICE_URL:http://user-service:8081}
+
+verify:
+  url-base: ${VERIFY_URL_BASE:http://localhost:8080/api/verify}
