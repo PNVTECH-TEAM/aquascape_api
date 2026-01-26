@@ -103,15 +103,15 @@ Email:
 - Auth service: 8082
 - Notification service: 8083
 - RabbitMQ: 5672 (AMQP), 15672 (UI)
-- User DB: 3307 -> 3306
-- Notification DB: 3308 -> 3306
+- User DB: 5432
+- Notification DB: 5432
 
 ## Flow verify email (tom tat)
 1) Client goi `POST /api/auth/register` qua gateway.
 2) Auth service tao user trong user-service (internal API).
 3) Auth service publish event `user.verification` len RabbitMQ.
-4) Notification service tao token, gui email.
-5) User click link verify -> gateway -> notification -> user-service update status.
+4) Notification service tao OTP, gui email.
+5) User nhap OTP va goi `GET /api/verify/otp?email=...&otp=...` -> user-service update status.
 
 ## Quick test (curl)
 Register:
@@ -126,6 +126,11 @@ Login:
 curl -X POST http://localhost:8080/api/auth/login ^
   -H "Content-Type: application/json" ^
   -d "{\"username\":\"demo\",\"password\":\"Abc123\"}"
+```
+
+Verify OTP:
+```
+curl "http://localhost:8080/api/verify/otp?email=demo@example.com&otp=123456"
 ```
 
 Get users:
@@ -155,9 +160,9 @@ Buoc 4: cap nhat `application.yml`
 
 Buoc 5: them vao Docker Compose (neu can)
 - Them service moi vao `services/docker-compose.yml`
-- Neu can DB rieng, them MySQL container rieng
+- Neu can DB rieng, them Postgres container rieng
 
 ## Troubleshooting
 - RabbitMQ chua san sang: doi vai giay hoac restart container.
-- MySQL init loi: xoa volume va chay lai `docker compose up --build`.
+- Postgres init loi: xoa volume va chay lai `docker compose up --build`.
 - Login fail: kiem tra user da ACTIVE sau verify.

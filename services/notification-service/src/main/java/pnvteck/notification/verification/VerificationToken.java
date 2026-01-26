@@ -20,7 +20,7 @@ import lombok.Setter;
 @Builder
 public class VerificationToken {
 
-    private static final int EXPIRATION_MINUTES = 15;
+    private static final int EXPIRATION_MINUTES = 3;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
         publishVerificationEvent(created, "REGISTER");
 
-        return "Register success. Please check email to verify.";
+        return "Register success. Please check email for OTP.";
     }
 
     @Override
@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
     public String resendToken(String email) {
         UserInternalResponse user = userServiceClient.getByEmail(email);
         publishVerificationEvent(user, "RESEND");
-        return "Verification email sent";
+        return "Verification OTP sent";
     }
 
     private void publishVerificationEvent(UserInternalResponse user, String eventType) {

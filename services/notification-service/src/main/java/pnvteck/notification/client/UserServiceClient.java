@@ -29,4 +29,12 @@ public class UserServiceClient {
                 request,
                 String.class);
     }
+
+    public void deleteIfInactive(Long userId) {
+        restTemplate.exchange(
+                baseUrl + "/internal/users/" + userId,
+                HttpMethod.DELETE,
+                HttpEntity.EMPTY,
+                Void.class);
+    }
 }

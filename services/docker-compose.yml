@@ -10,27 +10,28 @@ services:
     networks:
       - app-network
 
-  user-db:
-    image: mysql:8.0
+  aqua_app:
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: ${USER_DB_PASSWORD:-root}
-      MYSQL_DATABASE: ${APP_DB_NAME:-app_db}
+      POSTGRES_USER: ${USER_DB_USERNAME:-root}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD:-root}
+      POSTGRES_DB: ${APP_DB_NAME:-app_db}
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - user_db_data:/var/lib/mysql
+      - user_db_data:/var/lib/postgresql/data
     networks:
       - app-network
 
   user-service:
     build: ./user-service
     environment:
-      USER_DB_HOST: user-db
+      USER_DB_HOST: aqua_app
       USER_DB_USERNAME: ${USER_DB_USERNAME:-root}
       USER_DB_PASSWORD: ${USER_DB_PASSWORD:-root}
-      USER_DB_URL: jdbc:mysql://user-db:3306/${APP_DB_NAME:-app_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=TRUE
+      USER_DB_URL: jdbc:postgresql://aqua_app:5432/${APP_DB_NAME:-app_db}
     depends_on:
-      - user-db
+      - aqua_app
     networks:
       - app-network
 
@@ -51,12 +52,11 @@ services:
   notification-service:
     build: ./notification-service
     environment:
-      NOTIFY_DB_HOST: user-db
+      NOTIFY_DB_HOST: aqua_app
       NOTIFY_DB_USERNAME: ${NOTIFY_DB_USERNAME:-root}
       NOTIFY_DB_PASSWORD: ${NOTIFY_DB_PASSWORD:-root}
-      NOTIFY_DB_URL: jdbc:mysql://user-db:3306/${APP_DB_NAME:-app_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=TRUE
+      NOTIFY_DB_URL: jdbc:postgresql://aqua_app:5432/${APP_DB_NAME:-app_db}
       USER_SERVICE_URL: http://user-service:8081
-      VERIFY_URL_BASE: http://api-gateway:8080/api/verify
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
@@ -65,7 +65,7 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
     depends_on:
-      - user-db
+      - aqua_app
       - rabbitmq
     networks:
       - app-network
@@ -82,6 +82,16 @@ services:
       - auth-service
       - user-service
       - notification-service
+    networks:
+      - app-network
+      
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
     networks:
       - app-network
 

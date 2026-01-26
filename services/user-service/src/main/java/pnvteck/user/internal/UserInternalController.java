@@ -6,11 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import pnvteck.common.constant.AccountStatus;
 import pnvteck.user.UserEntity;
 import pnvteck.user.UserRepository;
 import pnvteck.user.internal.dto.CreateUserRequest;
@@ -68,6 +70,16 @@ public class UserInternalController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setStatus(request.getStatus());
         return mapInternal(userRepository.save(user));
+    }
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteIfInactive(@PathVariable Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getStatus() == AccountStatus.INACTIVE) {
+            userRepository.delete(user);
+        }
     }
 
     private UserInternalResponse mapInternal(UserEntity user) {

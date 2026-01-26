@@ -16,9 +16,9 @@ public class VerificationController {
     private final VerificationTokenService verificationTokenService;
     private final UserServiceClient userServiceClient;
 
-    @GetMapping("/verify")
-    public String verifyEmail(@RequestParam String token) {
-        VerificationToken verificationToken = verificationTokenService.verifyToken(token);
+    @GetMapping("/verify/otp")
+    public String verifyEmail(@RequestParam String email, @RequestParam String otp) {
+        VerificationToken verificationToken = verificationTokenService.verifyToken(email, otp);
         userServiceClient.updateStatus(verificationToken.getUserId(), AccountStatus.ACTIVE.name());
         verificationTokenService.deleteToken(verificationToken);
         return "Email verified successfully";
