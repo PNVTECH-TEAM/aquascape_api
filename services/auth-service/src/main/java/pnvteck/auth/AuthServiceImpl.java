@@ -57,7 +57,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(AuthRequestLogin request) {
-        UserInternalResponse user = userServiceClient.getByUsername(request.getUsername());
+        if (!EMAIL_REGEX.matcher(request.getEmail()).matches()) {
+            throw new RuntimeException("Email invalid");
+        }
+
+        UserInternalResponse user = userServiceClient.getByEmail(request.getEmail());
 
         if (user.getStatus() != AccountStatus.ACTIVE) {
             throw new RuntimeException("Account not verified");

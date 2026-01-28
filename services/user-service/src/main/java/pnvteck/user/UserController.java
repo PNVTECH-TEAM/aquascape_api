@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import pnvteck.common.response.ApiResponse;
 import pnvteck.user.dto.UserResponse;
@@ -17,8 +18,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{userId}")
-    public ApiResponse<UserResponse> getUser(@PathVariable("userId") Long userId) {
-        UserResponse result = userService.getUserById(userId);
+    public ApiResponse<UserResponse> getUser(
+            @PathVariable("userId") Long userId,
+            @RequestHeader(value = "X-User-Name", required = false) String requesterUsername) {
+        UserResponse result = userService.getUserById(userId, requesterUsername);
 
         return ApiResponse.<UserResponse>builder()
                 .code(1000)
@@ -28,8 +31,9 @@ public class UserController {
     }
 
     @GetMapping("/all-users")
-    public ApiResponse<List<UserResponse>> getAllUsers() {
-        List<UserResponse> result = userService.getAllUsers();
+    public ApiResponse<List<UserResponse>> getAllUsers(
+            @RequestHeader(value = "X-User-Name", required = false) String requesterUsername) {
+        List<UserResponse> result = userService.getAllUsers(requesterUsername);
 
         return ApiResponse.<List<UserResponse>>builder()
                 .code(1000)
