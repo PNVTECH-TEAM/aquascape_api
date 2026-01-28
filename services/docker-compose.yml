@@ -25,6 +25,8 @@ services:
 
   user-service:
     build: ./user-service
+    ports:
+      - "8081:8081"
     environment:
       USER_DB_HOST: aqua_app
       USER_DB_USERNAME: ${USER_DB_USERNAME:-root}
@@ -37,6 +39,8 @@ services:
 
   auth-service:
     build: ./auth-service
+    ports:
+      - "8082:8082"
     environment:
       USER_SERVICE_URL: http://user-service:8081
       RABBITMQ_HOST: rabbitmq
@@ -51,6 +55,8 @@ services:
 
   notification-service:
     build: ./notification-service
+    ports:
+      - "8083:8083"
     environment:
       NOTIFY_DB_HOST: aqua_app
       NOTIFY_DB_USERNAME: ${NOTIFY_DB_USERNAME:-root}
@@ -78,6 +84,7 @@ services:
       USER_SERVICE_URL: http://user-service:8081
       AUTH_SERVICE_URL: http://auth-service:8082
       NOTIFICATION_SERVICE_URL: http://notification-service:8083
+      JWT_SECRET: ${JWT_SECRET:-MY_SUPER_SECRET_KEY_123456789012345678901234}
     depends_on:
       - auth-service
       - user-service
@@ -97,6 +104,7 @@ services:
 
 volumes:
   user_db_data:
+  aquarium_storage:
 
 networks:
   app-network:
