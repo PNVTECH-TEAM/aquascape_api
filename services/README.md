@@ -125,7 +125,7 @@ Login:
 ```
 curl -X POST http://localhost:8080/api/auth/login ^
   -H "Content-Type: application/json" ^
-  -d "{\"username\":\"demo\",\"password\":\"Abc123\"}"
+  -d "{\"email\":\"demo@example.com\",\"password\":\"Abc123\"}"
 ```
 
 Verify OTP:

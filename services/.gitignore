@@ -30,3 +30,6 @@ settings.xml
 *.local
 *.tmp
 docker-compose.override.yml
+
+# Local uploads
+aquarium-service/storage/
