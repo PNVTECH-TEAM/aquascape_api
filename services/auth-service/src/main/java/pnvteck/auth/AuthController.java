@@ -13,6 +13,7 @@ import pnvteck.auth.dto.AuthRequest;
 import pnvteck.auth.dto.AuthRequestLogin;
 import pnvteck.auth.dto.AuthResponse;
 import pnvteck.auth.dto.TokenStatusResponse;
+import pnvteck.common.response.ApiResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,10 +39,22 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public String logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
-        String token = extractToken(authHeader);
-        authService.logout(token);
-        return "Logout success";
+    public ApiResponse<Void> logout(@RequestHeader(value = "Authorization", required = false) String token) {
+        try {
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
+                authService.logout(token);
+            }
+            return ApiResponse.<Void>builder()
+                    .code(1000)
+                    .message("Logout success")
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<Void>builder()
+                    .code(1001)
+                    .message("Logout failed: " + e.getMessage())
+                    .build();
+        }
     }
 
     @PostMapping("/token-status")

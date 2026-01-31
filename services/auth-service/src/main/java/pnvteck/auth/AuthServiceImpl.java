@@ -2,6 +2,7 @@ package pnvteck.auth;
 
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import pnvteck.common.constant.Role;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private static final Pattern EMAIL_REGEX = Pattern.compile(
@@ -84,8 +86,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String token) {
-        long expiresAt = jwtProvider.getExpirationMillis(token);
-        tokenBlacklistService.revoke(token, expiresAt);
+        try {
+            long expiresAt = jwtProvider.getExpirationMillis(token);
+            tokenBlacklistService.revoke(token, expiresAt);
+        } catch (Exception e) {
+            log.error("Cannot revoke token", e);
+        }
     }
 
     @Override
