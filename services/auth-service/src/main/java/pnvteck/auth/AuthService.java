@@ -9,4 +9,8 @@ public interface AuthService {
     String login(AuthRequestLogin request);
 
     String resendToken(String email);
+
+    void logout(String token);
+
+    boolean isTokenRevoked(String token);
 }

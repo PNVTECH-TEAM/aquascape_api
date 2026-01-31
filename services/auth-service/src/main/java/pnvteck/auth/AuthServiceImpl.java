@@ -28,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RabbitTemplate rabbitTemplate;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     public String register(AuthRequest request) {
@@ -79,6 +80,17 @@ public class AuthServiceImpl implements AuthService {
         UserInternalResponse user = userServiceClient.getByEmail(email);
         publishVerificationEvent(user, "RESEND");
         return "Verification OTP sent";
+    }
+
+    @Override
+    public void logout(String token) {
+        long expiresAt = jwtProvider.getExpirationMillis(token);
+        tokenBlacklistService.revoke(token, expiresAt);
+    }
+
+    @Override
+    public boolean isTokenRevoked(String token) {
+        return tokenBlacklistService.isRevoked(token);
     }
 
     private void publishVerificationEvent(UserInternalResponse user, String eventType) {

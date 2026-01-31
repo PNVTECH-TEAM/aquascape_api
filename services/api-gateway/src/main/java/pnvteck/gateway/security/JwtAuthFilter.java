@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import org.springframework.web.reactive.function.client.WebClient;
+import pnvteck.gateway.security.dto.TokenStatusResponse;
 
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
@@ -28,6 +30,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     @Value("${jwt.secret}")
     private String secret;
+
+    private final WebClient webClient;
+
+    public JwtAuthFilter(WebClient.Builder webClientBuilder,
+                         @Value("${auth.service-url}") String authServiceUrl) {
+        this.webClient = webClientBuilder.baseUrl(authServiceUrl).build();
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -50,10 +59,16 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             if (username == null || username.isBlank()) {
                 return unauthorized(exchange);
             }
-            ServerWebExchange mutated = exchange.mutate()
-                    .request(builder -> builder.header("X-User-Name", username))
-                    .build();
-            return chain.filter(mutated);
+            return isTokenRevoked(token)
+                    .flatMap(revoked -> {
+                        if (revoked) {
+                            return unauthorized(exchange);
+                        }
+                        ServerWebExchange mutated = exchange.mutate()
+                                .request(builder -> builder.header("X-User-Name", username))
+                                .build();
+                        return chain.filter(mutated);
+                    });
         } catch (Exception ex) {
             return unauthorized(exchange);
         }
@@ -76,5 +91,15 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private Mono<Void> unauthorized(ServerWebExchange exchange) {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
         return exchange.getResponse().setComplete();
+    }
+
+    private Mono<Boolean> isTokenRevoked(String token) {
+        return webClient.post()
+                .uri("/api/auth/token-status")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .bodyToMono(TokenStatusResponse.class)
+                .map(TokenStatusResponse::isRevoked)
+                .onErrorReturn(true);
     }
 }
