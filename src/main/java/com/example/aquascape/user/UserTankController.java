@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/user-tanks")
 public class UserTankController {
@@ -18,7 +19,12 @@ public class UserTankController {
 
     @GetMapping
     public ResponseEntity<List<UserTankDto>> getUserTanks(@RequestParam(required = false, defaultValue = "1") Long userId) {
-        // Here we mock userId = 1 as default if not provided until full JWT context takes over.
         return ResponseEntity.ok(userTankService.getUserTanks(userId));
+    }
+
+    @PostMapping
+    public ResponseEntity<UserTankDto> saveUserTank(@RequestParam(required = false, defaultValue = "1") Long userId,
+                                                    @RequestBody com.example.aquascape.user.dto.SaveTankRequest request) {
+        return ResponseEntity.ok(userTankService.saveUserTank(userId, request));
     }
 }

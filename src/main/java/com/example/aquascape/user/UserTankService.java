@@ -7,8 +7,12 @@ import com.example.aquascape.tank.*;
 import com.example.aquascape.user.dto.*;
 import org.springframework.stereotype.Service;
 
+import com.example.aquascape.catalog.AquariumCatalogRepository;
+import com.example.aquascape.catalog.AquariumCatalog;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,13 +21,19 @@ public class UserTankService {
     private final TankRepository tankRepository;
     private final TankLayoutRepository tankLayoutRepository;
     private final TankLayoutItemRepository tankLayoutItemRepository;
+    private final TankPresetRepository tankPresetRepository;
+    private final AquariumCatalogRepository catalogRepository;
 
     public UserTankService(TankRepository tankRepository,
                            TankLayoutRepository tankLayoutRepository,
-                           TankLayoutItemRepository tankLayoutItemRepository) {
+                           TankLayoutItemRepository tankLayoutItemRepository,
+                           TankPresetRepository tankPresetRepository,
+                           AquariumCatalogRepository catalogRepository) {
         this.tankRepository = tankRepository;
         this.tankLayoutRepository = tankLayoutRepository;
         this.tankLayoutItemRepository = tankLayoutItemRepository;
+        this.tankPresetRepository = tankPresetRepository;
+        this.catalogRepository = catalogRepository;
     }
 
     public List<UserTankDto> getUserTanks(Long userId) {
@@ -110,5 +120,78 @@ public class UserTankService {
                 .catalogItemId(item.getCatalogItem() != null ? item.getCatalogItem().getId() : null)
                 .transform(transform)
                 .build();
+    }
+
+    public UserTankDto saveUserTank(Long userId, SaveTankRequest request) {
+        Tank tank;
+        if (request.getId() != null && !request.getId().isEmpty()) {
+            tank = tankRepository.findById(UUID.fromString(request.getId()))
+                    .orElseThrow(() -> new IllegalArgumentException("Tank not found"));
+            
+            if (!tank.getUserId().equals(userId)) {
+                throw new IllegalArgumentException("You don't have permission to edit this tank");
+            }
+            if (request.getName() != null) tank.setName(request.getName());
+            if (request.getPresetId() != null) {
+                tank.setPreset(tankPresetRepository.findById(request.getPresetId()).orElse(null));
+            }
+            
+            tank.setLatestLayoutVersion(tank.getLatestLayoutVersion() + 1);
+        } else {
+            tank = new Tank();
+            tank.setUserId(userId);
+            tank.setName(request.getName() != null ? request.getName() : "Untilted Tank");
+            tank.setLatestLayoutVersion(1);
+            if (request.getPresetId() != null) {
+                tank.setPreset(tankPresetRepository.findById(request.getPresetId()).orElse(null));
+            }
+        }
+
+        tank = tankRepository.save(tank);
+
+        TankLayout layout = new TankLayout();
+        layout.setTank(tank);
+        layout.setVersion(tank.getLatestLayoutVersion());
+        layout.setPreviewImageUrl(request.getPreviewImageUrl());
+        layout = tankLayoutRepository.save(layout);
+
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            TankLayout finalLayout = layout;
+            List<TankLayoutItem> entities = request.getItems().stream().map(dto -> {
+                TankLayoutItem item = new TankLayoutItem();
+                item.setLayout(finalLayout);
+                item.setInstanceId(dto.getInstanceId());
+                if (dto.getCatalogItemId() != null) {
+                    item.setCatalogItem(catalogRepository.findById(dto.getCatalogItemId()).orElse(null));
+                }
+                
+                if (dto.getTransform() != null) {
+                    if (dto.getTransform().getPosition() != null) {
+                        item.setPosX(dto.getTransform().getPosition().getX());
+                        item.setPosY(dto.getTransform().getPosition().getY());
+                        item.setPosZ(dto.getTransform().getPosition().getZ());
+                    }
+                    if (dto.getTransform().getRotation() != null) {
+                        item.setRotX(dto.getTransform().getRotation().getX());
+                        item.setRotY(dto.getTransform().getRotation().getY());
+                        item.setRotZ(dto.getTransform().getRotation().getZ());
+                    }
+                    if (dto.getTransform().getScale() != null) {
+                        item.setScaleX(dto.getTransform().getScale().getX());
+                        item.setScaleY(dto.getTransform().getScale().getY());
+                        item.setScaleZ(dto.getTransform().getScale().getZ());
+                    }
+                }
+                return item;
+            }).collect(Collectors.toList());
+            
+            tankLayoutItemRepository.saveAll(entities);
+        }
+
+        final Tank finalTank = tank;
+        return getUserTanks(userId).stream()
+                .filter(t -> t.getId().equals(finalTank.getId().toString()))
+                .findFirst()
+                .orElse(null);
     }
 }
