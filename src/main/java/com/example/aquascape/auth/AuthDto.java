@@ -2,6 +2,7 @@ package com.example.aquascape.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class AuthDto {
     @AllArgsConstructor
     public static class SignUpRequest {
         @NotBlank(message = "Email is required")
-        @Email(message = "Email should be valid")
+        @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$", message = "Email should be valid (e.g., user@example.com)")
         private String email;
 
         @NotBlank(message = "Full name is required")
@@ -35,7 +36,7 @@ public class AuthDto {
     @AllArgsConstructor
     public static class LoginRequest {
         @NotBlank(message = "Email is required")
-        @Email(message = "Email should be valid")
+        @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$", message = "Email should be valid")
         private String email;
 
         @NotBlank(message = "Password is required")
