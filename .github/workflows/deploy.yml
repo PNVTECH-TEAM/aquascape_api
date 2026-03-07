@@ -41,6 +41,9 @@ jobs:
           docker rm aquascape-api || true
           docker run -d \
             --name aquascape-api \
+            --restart always \
             -p 8080:8080 \
-            -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            -e SPRING_DATASOURCE_URL="${{ secrets.DATABASE_URL }}" \
+            -e SPRING_DATASOURCE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
+            -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
             ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
