@@ -2,7 +2,7 @@ name: Build and Deploy to Render
 
 on:
   push:
-    branches: [ 'main', 'develop' ]
+    branches: [ 'main', 'feature/PNVTECH-106-ci-cd-gcp' ]
 
 jobs:
   build-and-deploy:
@@ -29,6 +29,18 @@ jobs:
           ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
           ${{ secrets.DOCKER_USERNAME }}/aquascape-api:${{ github.sha }}
     
-    - name: Trigger Render Deploy
-      run: |
-        curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+    - name: Deploy to GCP VM via SSH
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.GCP_VM_IP }}
+        username: ${{ secrets.GCP_VM_USER }}
+        key: ${{ secrets.GCP_SSH_KEY }}
+        script: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
+          docker stop aquascape-api || true
+          docker rm aquascape-api || true
+          docker run -d \
+            --name aquascape-api \
+            -p 8080:8080 \
+            -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
