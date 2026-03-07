@@ -2,7 +2,7 @@ name: Build and Deploy to Render
 
 on:
   push:
-    branches: [ 'main', 'feature/PNVTECH-106-ci-cd-gcp' ]
+    branches: [ 'main', 'develop' ]
 
 jobs:
   build-and-deploy:
