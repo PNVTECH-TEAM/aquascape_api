@@ -31,4 +31,17 @@ public class GlobalExceptionHandler {
                 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ExceptionHandler(org.springframework.web.multipart.support.MissingServletRequestPartException.class)
+    public ResponseEntity<AuthDto.ErrorResponse> handleMissingServletRequestPartException(
+            org.springframework.web.multipart.support.MissingServletRequestPartException ex) {
+        
+        AuthDto.ErrorResponse error = AuthDto.ErrorResponse.builder()
+                .message("Required part '" + ex.getRequestPartName() + "' is not present.")
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+                
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

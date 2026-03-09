@@ -1,5 +1,8 @@
-# Stage 1: Build stage with Maven cache optimization
 FROM eclipse-temurin:21-jdk-alpine AS builder
+
+RUN apk add --no-cache curl bash gcompat 
+
+WORKDIR /app
 
 RUN apk add --no-cache \
     curl \
