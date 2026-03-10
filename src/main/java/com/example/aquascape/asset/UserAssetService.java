@@ -75,7 +75,20 @@ public class UserAssetService {
         if (!asset.getUser().getId().equals(userId)) {
             throw new RuntimeException("Unauthorized to delete this asset");
         }
+
+        log.info("Deleting files from cloud for asset: {} (ID: {})", asset.getName(), assetId);
         
+        if (asset.getGlbUrl() != null) {
+            log.info("Deleting GLB file: {}", asset.getGlbUrl());
+            azureStorageService.deleteFile(asset.getGlbUrl());
+        }
+        
+        if (asset.getPreviewImageUrl() != null) {
+            log.info("Deleting preview image: {}", asset.getPreviewImageUrl());
+            azureStorageService.deleteFile(asset.getPreviewImageUrl());
+        }
+        
+        log.info("Deleting asset record from database: ID {}", assetId);
         userAssetRepository.delete(asset);
     }
 

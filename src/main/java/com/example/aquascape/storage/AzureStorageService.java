@@ -49,4 +49,23 @@ public class AzureStorageService {
 
         return blobClient.getBlobUrl();
     }
+    public void deleteFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return;
+        }
+
+        try {
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+            
+            String containerPath = "/" + containerName + "/";
+            int index = fileUrl.indexOf(containerPath);
+            if (index != -1) {
+                String blobName = fileUrl.substring(index + containerPath.length());
+                BlobClient blobClient = containerClient.getBlobClient(blobName);
+                blobClient.deleteIfExists();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete file from Azure Storage: " + fileUrl, e);
+        }
+    }
 }

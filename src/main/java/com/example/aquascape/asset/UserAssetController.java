@@ -1,5 +1,6 @@
 package com.example.aquascape.asset;
 
+import com.example.aquascape.asset.dto.AssetDeleteResponse;
 import com.example.aquascape.asset.dto.UserAssetResponse;
 import com.example.aquascape.auth.Auth;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDateTime;
 
 import java.util.List;
 
@@ -45,10 +47,17 @@ public class UserAssetController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAsset(
+    public ResponseEntity<AssetDeleteResponse> deleteAsset(
             @PathVariable Long id,
             @AuthenticationPrincipal Auth user) {
         userAssetService.deleteAsset(id, user.getId());
-        return ResponseEntity.noContent().build();
+        
+        AssetDeleteResponse response = AssetDeleteResponse.builder()
+                .message("Asset deleted successfully")
+                .assetId(id)
+                .timestamp(LocalDateTime.now())
+                .build();
+                
+        return ResponseEntity.ok(response);
     }
 }
