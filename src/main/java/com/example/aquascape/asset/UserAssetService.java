@@ -23,7 +23,7 @@ public class UserAssetService {
     private final AzureStorageService azureStorageService;
 
     @Transactional
-    public UserAssetResponse uploadAsset(Auth user, String name, MultipartFile glbFile, MultipartFile previewImage) {
+    public UserAssetResponse uploadAsset(Auth user, String name, String type, MultipartFile glbFile, MultipartFile previewImage) {
         try {
             log.info("Uploading GLB file for user {}: {}", user.getId(), glbFile.getOriginalFilename());
             String glbUrl = azureStorageService.uploadFile(glbFile, "3d-models/" + user.getId());
@@ -37,6 +37,7 @@ public class UserAssetService {
             UserAsset userAsset = UserAsset.builder()
                     .user(user)
                     .name(name)
+                    .type(type)
                     .glbUrl(glbUrl)
                     .previewImageUrl(previewUrl)
                     .build();
@@ -96,6 +97,7 @@ public class UserAssetService {
         return UserAssetResponse.builder()
                 .id(asset.getId())
                 .userId(asset.getUser().getId())
+                .type(asset.getType())
                 .name(asset.getName())
                 .glbUrl(asset.getGlbUrl())
                 .previewImageUrl(asset.getPreviewImageUrl())

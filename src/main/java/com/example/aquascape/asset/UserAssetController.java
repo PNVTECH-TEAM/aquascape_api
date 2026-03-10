@@ -25,10 +25,11 @@ public class UserAssetController {
     public ResponseEntity<UserAssetResponse> uploadAsset(
             @AuthenticationPrincipal Auth user,
             @RequestParam("name") String name,
+            @RequestParam("type") String type,
             @RequestParam("glbFile") MultipartFile glbFile,
             @RequestParam(value = "previewImage", required = false) MultipartFile previewImage) {
             
-        UserAssetResponse response = userAssetService.uploadAsset(user, name, glbFile, previewImage);
+        UserAssetResponse response = userAssetService.uploadAsset(user, name, type, glbFile, previewImage);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

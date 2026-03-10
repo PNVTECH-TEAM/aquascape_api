@@ -30,6 +30,9 @@ public class UserAsset {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "type", nullable = true)
+    private String type;
+
     @Column(name = "glb_url", nullable = false)
     private String glbUrl;
 

@@ -14,6 +14,7 @@ public class UserAssetResponse {
     private Long id;
     private Long userId;
     private String name;
+    private String type;
     private String glbUrl;
     private String previewImageUrl;
     private LocalDateTime createdAt;
