@@ -1,7 +1,9 @@
 package com.example.aquascape.user;
 
+import com.example.aquascape.auth.Auth;
 import com.example.aquascape.user.dto.UserTankDto;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,13 +20,13 @@ public class UserTankController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserTankDto>> getUserTanks(@RequestParam(required = false, defaultValue = "1") Long userId) {
-        return ResponseEntity.ok(userTankService.getUserTanks(userId));
+    public ResponseEntity<List<UserTankDto>> getUserTanks(@AuthenticationPrincipal Auth user) {
+        return ResponseEntity.ok(userTankService.getUserTanks(user.getId()));
     }
 
     @PostMapping
-    public ResponseEntity<UserTankDto> saveUserTank(@RequestParam(required = false, defaultValue = "1") Long userId,
+    public ResponseEntity<UserTankDto> saveUserTank(@AuthenticationPrincipal Auth user,
                                                     @RequestBody com.example.aquascape.user.dto.SaveTankRequest request) {
-        return ResponseEntity.ok(userTankService.saveUserTank(userId, request));
+        return ResponseEntity.ok(userTankService.saveUserTank(user.getId(), request));
     }
 }

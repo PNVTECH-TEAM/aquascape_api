@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SaveTankRequest {
-    private String id; // null = create new tank
+    private String id;
     private String name;
     private String presetId;
     private String previewImageUrl;

@@ -118,6 +118,7 @@ public class UserTankService {
                 .tankLayoutId(item.getLayout() != null ? item.getLayout().getId().toString() : null)
                 .instanceId(item.getInstanceId())
                 .catalogItemId(item.getCatalogItem() != null ? item.getCatalogItem().getId() : null)
+                .userAssetId(item.getUserAssetId())
                 .transform(transform)
                 .build();
     }
@@ -163,6 +164,10 @@ public class UserTankService {
                 item.setInstanceId(dto.getInstanceId());
                 if (dto.getCatalogItemId() != null) {
                     item.setCatalogItem(catalogRepository.findById(dto.getCatalogItemId()).orElse(null));
+                }
+                
+                if (dto.getUserAssetId() != null) {
+                    item.setUserAssetId(dto.getUserAssetId());
                 }
                 
                 if (dto.getTransform() != null) {

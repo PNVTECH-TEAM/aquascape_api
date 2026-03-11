@@ -14,5 +14,6 @@ public class TankLayoutItemDto {
     private String tankLayoutId;
     private String instanceId;
     private String catalogItemId;
+    private Long userAssetId;
     private TransformDto transform;
 }

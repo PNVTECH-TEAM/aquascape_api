@@ -35,6 +35,9 @@ public class TankLayoutItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "catalog_item_id")
     private AquariumCatalog catalogItem;
+    
+    @Column(name = "user_asset_id")
+    private Long userAssetId;
 
     @Column(name = "pos_x", precision = 10, scale = 4)
     private BigDecimal posX;
