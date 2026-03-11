@@ -46,4 +46,6 @@ jobs:
             -e SPRING_DATASOURCE_URL="${{ secrets.DATABASE_URL }}" \
             -e SPRING_DATASOURCE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
             -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
+            -e AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            -e AZURE_STORAGE_CONTAINER_NAME="${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
