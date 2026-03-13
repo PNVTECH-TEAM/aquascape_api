@@ -37,7 +37,12 @@ public class UserTankService {
     }
 
     public List<TankMetadataDto> getUserTankVersions(Long userId, String presetId) {
-        List<TankLayout> layouts = tankLayoutRepository.findAllByUserAndPreset(userId, presetId);
+        List<TankLayout> layouts;
+        if (presetId != null && !presetId.isEmpty()) {
+            layouts = tankLayoutRepository.findByUserIdAndPresetId(userId, presetId);
+        } else {
+            layouts = tankLayoutRepository.findByUserId(userId);
+        }
         return layouts.stream().map(layout -> TankMetadataDto.builder()
                 .layoutId(layout.getId().toString())
                 .tankId(layout.getTank().getId().toString())
@@ -49,8 +54,13 @@ public class UserTankService {
         ).collect(Collectors.toList());
     }
 
-    public List<UserTankDto> getUserTanks(Long userId) {
-        List<Tank> userTanks = tankRepository.findByUserId(userId);
+    public List<UserTankDto> getUserTanks(Long userId, String presetId) {
+        List<Tank> userTanks;
+        if (presetId != null && !presetId.isEmpty()) {
+            userTanks = tankRepository.findByUserIdAndPresetId(userId, presetId);
+        } else {
+            userTanks = tankRepository.findByUserId(userId);
+        }
 
         return userTanks.stream().map(tank -> {
             UserTankDto dto = mapTank(tank);
@@ -165,7 +175,8 @@ public class UserTankService {
             }
             if (request.getName() != null) tank.setName(request.getName());
             if (request.getPresetId() != null) {
-                tank.setPreset(tankPresetRepository.findById(request.getPresetId()).orElse(null));
+                tank.setPreset(tankPresetRepository.findById(request.getPresetId())
+                        .orElseThrow(() -> new IllegalArgumentException("Tank Size (Preset) not found with ID: " + request.getPresetId())));
             }
             
             tank.setLatestLayoutVersion(tank.getLatestLayoutVersion() + 1);
@@ -175,7 +186,8 @@ public class UserTankService {
             tank.setName(request.getName() != null ? request.getName() : "Untilted Tank");
             tank.setLatestLayoutVersion(1);
             if (request.getPresetId() != null) {
-                tank.setPreset(tankPresetRepository.findById(request.getPresetId()).orElse(null));
+                tank.setPreset(tankPresetRepository.findById(request.getPresetId())
+                        .orElseThrow(() -> new IllegalArgumentException("Tank Size (Preset) not found with ID: " + request.getPresetId())));
             }
         }
 
@@ -225,7 +237,7 @@ public class UserTankService {
         }
 
         final Tank finalTank = tank;
-        return getUserTanks(userId).stream()
+        return getUserTanks(userId, null).stream()
                 .filter(t -> t.getId().equals(finalTank.getId().toString()))
                 .findFirst()
                 .orElse(null);

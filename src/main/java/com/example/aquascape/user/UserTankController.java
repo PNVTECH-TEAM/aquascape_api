@@ -21,8 +21,10 @@ public class UserTankController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserTankDto>> getUserTanks(@AuthenticationPrincipal Auth user) {
-        return ResponseEntity.ok(userTankService.getUserTanks(user.getId()));
+    public ResponseEntity<List<UserTankDto>> getUserTanks(
+            @AuthenticationPrincipal Auth user,
+            @RequestParam(value = "presetId", required = false) String presetId) {
+        return ResponseEntity.ok(userTankService.getUserTanks(user.getId(), presetId));
     }
 
     @GetMapping("/versions")

@@ -22,8 +22,6 @@ public class Tank {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // Chú ý: Trong script của bạn user_id là UUID, nhưng do entity Auth (User) 
-    // đã được cấu hình với kiểu ID là Long, nên chúng ta ánh xạ với Long để đồng bộ.
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
