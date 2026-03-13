@@ -36,3 +36,5 @@ build/
 application-local.properties
 application-dev.properties
 
+*.md
+

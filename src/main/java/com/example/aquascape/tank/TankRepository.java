@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface TankRepository extends JpaRepository<Tank, UUID> {
     List<Tank> findByUserId(Long userId);
+    List<Tank> findByUserIdAndPresetId(Long userId, String presetId);
 }
