@@ -31,6 +31,10 @@ RUN apk --no-cache upgrade \
     && apk add --no-cache \
     dumb-init \
     curl \
+    nodejs \
+    npm \
+    gcompat \
+    && npm install -g gltf-pipeline \
     && addgroup -g 1001 -S appgroup \
     && adduser -u 1001 -S appuser -G appgroup \
     && rm -rf /var/cache/apk/*

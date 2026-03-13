@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -33,6 +36,10 @@ public class AzureStorageService {
         }
         
         String fileName = pathPrefix + "/" + UUID.randomUUID().toString() + extension;
+        return uploadFile(file.getBytes(), fileName);
+    }
+
+    public String uploadFile(byte[] content, String fileName) throws IOException {
 
         BlobContainerClient containerClient;
         try {
@@ -45,6 +52,9 @@ public class AzureStorageService {
         }
 
         BlobClient blobClient = containerClient.getBlobClient(fileName);
+        try (InputStream inputStream = new ByteArrayInputStream(content)) {
+            blobClient.upload(inputStream, content.length, true);
+        }
         blobClient.upload(file.getInputStream(), file.getSize(), true);
 
         return blobClient.getBlobUrl();
