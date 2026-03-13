@@ -21,17 +21,34 @@ public class UserAssetService {
 
     private final UserAssetRepository userAssetRepository;
     private final AzureStorageService azureStorageService;
+    private final GltfProcessorService gltfProcessorService;
+    private final ImageProcessorService imageProcessorService;
 
     @Transactional
     public UserAssetResponse uploadAsset(Auth user, String name, String type, MultipartFile glbFile, MultipartFile previewImage) {
         try {
-            log.info("Uploading GLB file for user {}: {}", user.getId(), glbFile.getOriginalFilename());
-            String glbUrl = azureStorageService.uploadFile(glbFile, "3d-models/" + user.getId());
+            log.info("Processing and uploading GLB file for user {}: {}", user.getId(), glbFile.getOriginalFilename());
+            
+            byte[] processedGlb = gltfProcessorService.compressGlb(glbFile);
+            
+            String originalFilename = glbFile.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".") 
+                    ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
+                    : ".glb";
+            String glbPath = "3d-models/" + user.getId() + "/" + java.util.UUID.randomUUID().toString() + extension;
+            
+            String glbUrl = azureStorageService.uploadFile(processedGlb, glbPath);
 
             String previewUrl = null;
             if (previewImage != null && !previewImage.isEmpty()) {
-                log.info("Uploading preview image for user {}: {}", user.getId(), previewImage.getOriginalFilename());
-                previewUrl = azureStorageService.uploadFile(previewImage, "previews/" + user.getId());
+                log.info("Processing and uploading preview image for user {}: {}", user.getId(), previewImage.getOriginalFilename());
+                
+                ImageProcessorService.ProcessedImage processedImage = imageProcessorService.compressPreviewImage(previewImage);
+                
+                String imgExtension = processedImage.getExtension();
+                String imgPath = "previews/" + user.getId() + "/" + java.util.UUID.randomUUID().toString() + imgExtension;
+                
+                previewUrl = azureStorageService.uploadFile(processedImage.getData(), imgPath);
             }
 
             UserAsset userAsset = UserAsset.builder()

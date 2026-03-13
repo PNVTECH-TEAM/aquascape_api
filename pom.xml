@@ -96,11 +96,16 @@
 			<version>0.12.3</version>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- Azure Storage Blob -->
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-storage-blob</artifactId>
 			<version>12.25.1</version>
+		</dependency>
+		<!-- Image compression -->
+		<dependency>
+			<groupId>net.coobird</groupId>
+			<artifactId>thumbnailator</artifactId>
+			<version>0.4.20</version>
 		</dependency>
 
 	</dependencies>
