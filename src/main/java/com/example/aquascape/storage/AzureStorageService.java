@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.util.UUID;
 
 @Service
@@ -39,6 +40,7 @@ public class AzureStorageService {
     }
 
     public String uploadFile(byte[] content, String fileName) throws IOException {
+
         BlobContainerClient containerClient;
         try {
             containerClient = blobServiceClient.createBlobContainer(containerName);
@@ -53,6 +55,7 @@ public class AzureStorageService {
         try (InputStream inputStream = new ByteArrayInputStream(content)) {
             blobClient.upload(inputStream, content.length, true);
         }
+        blobClient.upload(file.getInputStream(), file.getSize(), true);
 
         return blobClient.getBlobUrl();
     }
