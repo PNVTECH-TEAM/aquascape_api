@@ -49,13 +49,6 @@ public class UserAssetService {
                 String imgPath = "previews/" + user.getId() + "/" + java.util.UUID.randomUUID().toString() + imgExtension;
                 
                 previewUrl = azureStorageService.uploadFile(processedImage.getData(), imgPath);
-            log.info("Uploading GLB file for user {}: {}", user.getId(), glbFile.getOriginalFilename());
-            String glbUrl = azureStorageService.uploadFile(glbFile, "3d-models/" + user.getId());
-
-            String previewUrl = null;
-            if (previewImage != null && !previewImage.isEmpty()) {
-                log.info("Uploading preview image for user {}: {}", user.getId(), previewImage.getOriginalFilename());
-                previewUrl = azureStorageService.uploadFile(previewImage, "previews/" + user.getId());
             }
 
             UserAsset userAsset = UserAsset.builder()
