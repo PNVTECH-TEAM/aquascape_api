@@ -36,8 +36,31 @@ public class UserTankService {
         this.catalogRepository = catalogRepository;
     }
 
-    public List<UserTankDto> getUserTanks(Long userId) {
-        List<Tank> userTanks = tankRepository.findByUserId(userId);
+    public List<TankMetadataDto> getUserTankVersions(Long userId, String presetId) {
+        List<TankLayout> layouts;
+        if (presetId != null && !presetId.isEmpty()) {
+            layouts = tankLayoutRepository.findByUserIdAndPresetId(userId, presetId);
+        } else {
+            layouts = tankLayoutRepository.findByUserId(userId);
+        }
+        return layouts.stream().map(layout -> TankMetadataDto.builder()
+                .layoutId(layout.getId().toString())
+                .tankId(layout.getTank().getId().toString())
+                .tankName(layout.getTank().getName())
+                .version(layout.getVersion())
+                .previewImageUrl(layout.getPreviewImageUrl())
+                .savedAt(layout.getSavedAt())
+                .build()
+        ).collect(Collectors.toList());
+    }
+
+    public List<UserTankDto> getUserTanks(Long userId, String presetId) {
+        List<Tank> userTanks;
+        if (presetId != null && !presetId.isEmpty()) {
+            userTanks = tankRepository.findByUserIdAndPresetId(userId, presetId);
+        } else {
+            userTanks = tankRepository.findByUserId(userId);
+        }
 
         return userTanks.stream().map(tank -> {
             UserTankDto dto = mapTank(tank);
@@ -61,6 +84,24 @@ public class UserTankService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    public TankLayoutDto getLayoutDetails(Long userId, UUID layoutId) {
+        TankLayout layout = tankLayoutRepository.findById(layoutId)
+                .orElseThrow(() -> new IllegalArgumentException("Layout not found"));
+
+        if (!layout.getTank().getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Unauthorized access to this layout");
+        }
+
+        List<TankLayoutItem> items = tankLayoutItemRepository.findByLayoutId(layout.getId());
+
+        return TankLayoutDto.builder()
+                .id(layout.getId().toString())
+                .version(layout.getVersion())
+                .previewImageUrl(layout.getPreviewImageUrl())
+                .tankLayoutItems(items.stream().map(this::mapLayoutItem).collect(Collectors.toList()))
+                .build();
     }
 
     private UserTankDto mapTank(Tank tank) {
@@ -134,7 +175,8 @@ public class UserTankService {
             }
             if (request.getName() != null) tank.setName(request.getName());
             if (request.getPresetId() != null) {
-                tank.setPreset(tankPresetRepository.findById(request.getPresetId()).orElse(null));
+                tank.setPreset(tankPresetRepository.findById(request.getPresetId())
+                        .orElseThrow(() -> new IllegalArgumentException("Tank Size (Preset) not found with ID: " + request.getPresetId())));
             }
             
             tank.setLatestLayoutVersion(tank.getLatestLayoutVersion() + 1);
@@ -144,7 +186,8 @@ public class UserTankService {
             tank.setName(request.getName() != null ? request.getName() : "Untilted Tank");
             tank.setLatestLayoutVersion(1);
             if (request.getPresetId() != null) {
-                tank.setPreset(tankPresetRepository.findById(request.getPresetId()).orElse(null));
+                tank.setPreset(tankPresetRepository.findById(request.getPresetId())
+                        .orElseThrow(() -> new IllegalArgumentException("Tank Size (Preset) not found with ID: " + request.getPresetId())));
             }
         }
 
@@ -194,7 +237,7 @@ public class UserTankService {
         }
 
         final Tank finalTank = tank;
-        return getUserTanks(userId).stream()
+        return getUserTanks(userId, null).stream()
                 .filter(t -> t.getId().equals(finalTank.getId().toString()))
                 .findFirst()
                 .orElse(null);
