@@ -16,6 +16,7 @@ public class TankPresetService {
         this.repository = repository;
     }
 
+    @org.springframework.cache.annotation.Cacheable(value = "catalog", key = "'all_presets'")
     public List<TankPresetDto> getAllPresets() {
         return repository.findAll().stream()
                 .map(this::mapToDto)

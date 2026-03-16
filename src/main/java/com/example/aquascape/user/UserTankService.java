@@ -54,6 +54,7 @@ public class UserTankService {
         ).collect(Collectors.toList());
     }
 
+    @org.springframework.cache.annotation.Cacheable(value = "user_tanks", key = "#userId + (#presetId != null ? '_' + #presetId : '')")
     public List<UserTankDto> getUserTanks(Long userId, String presetId) {
         List<Tank> userTanks;
         if (presetId != null && !presetId.isEmpty()) {
@@ -86,6 +87,7 @@ public class UserTankService {
         }).collect(Collectors.toList());
     }
 
+    @org.springframework.cache.annotation.Cacheable(value = "tank_layout", key = "#layoutId.toString()")
     public TankLayoutDto getLayoutDetails(Long userId, UUID layoutId) {
         TankLayout layout = tankLayoutRepository.findById(layoutId)
                 .orElseThrow(() -> new IllegalArgumentException("Layout not found"));
@@ -164,6 +166,7 @@ public class UserTankService {
                 .build();
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "user_tanks", allEntries = true)
     public UserTankDto saveUserTank(Long userId, SaveTankRequest request) {
         Tank tank;
         if (request.getId() != null && !request.getId().isEmpty()) {

@@ -15,6 +15,7 @@ public class CatalogService {
         this.repository = repository;
     }
 
+    @org.springframework.cache.annotation.Cacheable(value = "catalog", key = "'all_grouped'")
     public List<CatalogCategoryDto> getGroupedCatalog() {
         List<AquariumCatalog> items = repository.findByIsActiveTrue();
 
