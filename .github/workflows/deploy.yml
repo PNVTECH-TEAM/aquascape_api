@@ -36,10 +36,11 @@ jobs:
         username: ${{ secrets.GCP_VM_USER }}
         key: ${{ secrets.GCP_SSH_KEY }}
         script: |
-          docker network create auth-network || true
           docker stop aquascape-api || true
           docker rm aquascape-api || true
           docker system prune -f || true
+          
+          docker network create auth-network || true
           
           # Khởi động ClamAV nếu chưa có
           if [ ! "$(docker ps -q -f name=aquascape-clamav)" ]; then
