@@ -2,7 +2,7 @@ name: Build and Deploy to Render
 
 on:
   push:
-    branches: [ 'main', 'develop', 'feature/PNVTECH-128-api-tank-specific-select' ]
+    branches: [ 'main', 'develop', 'feature/PNVTECH-150-scan-uploaded-glb-files' ]
 
 jobs:
   build-and-deploy:
@@ -48,4 +48,8 @@ jobs:
             -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
             -e AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             -e AZURE_STORAGE_CONTAINER_NAME="${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
+            -e REDIS_PORT="${{ secrets.REDIS_PORT }}" \
+            -e REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
+            -e REDIS_SSL="${{ secrets.REDIS_SSL }}" \
             ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
