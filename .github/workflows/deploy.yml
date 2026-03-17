@@ -36,12 +36,14 @@ jobs:
         username: ${{ secrets.GCP_VM_USER }}
         key: ${{ secrets.GCP_SSH_KEY }}
         script: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
           docker stop aquascape-api || true
           docker rm aquascape-api || true
+          docker system prune -af || true
+          docker pull ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
           docker run -d \
             --name aquascape-api \
             --restart always \
+            -v /tmp:/tmp \
             -p 8080:8080 \
             -e SPRING_DATASOURCE_URL="${{ secrets.DATABASE_URL }}" \
             -e SPRING_DATASOURCE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
