@@ -5,7 +5,9 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.models.BlobErrorCode;
 import com.azure.storage.blob.models.BlobStorageException;
-import org.springframework.beans.factory.annotation.Value;
+import com.example.aquascape.security.FileSecurityService;
+import com.example.aquascape.security.VirusScannerService;
+import  org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,15 +21,23 @@ public class AzureStorageService {
 
     private final BlobServiceClient blobServiceClient;
     private final String containerName;
+    private final FileSecurityService fileSecurityService;
+    private final VirusScannerService virusScannerService;
 
     public AzureStorageService(
             BlobServiceClient blobServiceClient,
-            @Value("${azure.storage.container-name}") String containerName) {
+            @Value("${azure.storage.container-name}") String containerName,
+            FileSecurityService fileSecurityService,
+            VirusScannerService virusScannerService) {
         this.blobServiceClient = blobServiceClient;
         this.containerName = containerName;
+        this.fileSecurityService = fileSecurityService;
+        this.virusScannerService = virusScannerService;
     }
 
     public String uploadFile(MultipartFile file, String pathPrefix) throws IOException {
+        fileSecurityService.validate(file);
+        virusScannerService.scanFile(file);
         String originalFilename = file.getOriginalFilename();
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {

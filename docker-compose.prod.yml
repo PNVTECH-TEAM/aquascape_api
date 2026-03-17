@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  clamav:
+    image: clamav/clamav:latest
+    container_name: aquascape-clamav
+    restart: always
+    networks:
+      - auth-network
+
   spring-app:
     image: hanhdev764/aquascape-api:latest
     container_name: aquascape-api
@@ -13,11 +20,17 @@ services:
       SPRING_REDIS_HOST: ${REDIS_HOST}
       SPRING_REDIS_PORT: ${REDIS_PORT}
       SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: 3310
+      AZURE_STORAGE_CONNECTION_STRING: ${AZURE_STORAGE_CONNECTION_STRING}
+      AZURE_STORAGE_CONTAINER_NAME: ${AZURE_STORAGE_CONTAINER_NAME}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "false"
     networks:
       - auth-network
     restart: always
+    depends_on:
+      - clamav
 
 networks:
   auth-network:

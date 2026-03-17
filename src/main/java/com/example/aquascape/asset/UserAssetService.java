@@ -3,6 +3,8 @@ package com.example.aquascape.asset;
 import com.example.aquascape.asset.dto.UserAssetResponse;
 import com.example.aquascape.auth.Auth;
 import com.example.aquascape.storage.AzureStorageService;
+import com.example.aquascape.security.FileSecurityService;
+import com.example.aquascape.security.VirusScannerService;
 import com.example.aquascape.asset.dto.UserAssetUploadRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +25,24 @@ public class UserAssetService {
     private final AzureStorageService azureStorageService;
     private final GltfProcessorService gltfProcessorService;
     private final ImageProcessorService imageProcessorService;
+    private final FileSecurityService fileSecurityService;
+    private final VirusScannerService virusScannerService;
 
     @Transactional
     public UserAssetResponse uploadAsset(Auth user, String name, String type, MultipartFile glbFile, MultipartFile previewImage) {
         try {
-            log.info("Processing and uploading GLB file for user {}: {}", user.getId(), glbFile.getOriginalFilename());
+            log.info("Validating, scanning and processing files for user {}: {}", user.getId(), glbFile.getOriginalFilename());
             
+            fileSecurityService.validateGlb(glbFile);
+            if (previewImage != null && !previewImage.isEmpty()) {
+                fileSecurityService.validateImage(previewImage);
+            }
+            virusScannerService.scanFile(glbFile);
+            if (previewImage != null && !previewImage.isEmpty()) {
+                virusScannerService.scanFile(previewImage);
+            }
+
+            // 3. Process and upload
             byte[] processedGlb = gltfProcessorService.compressGlb(glbFile);
             
             String originalFilename = glbFile.getOriginalFilename();

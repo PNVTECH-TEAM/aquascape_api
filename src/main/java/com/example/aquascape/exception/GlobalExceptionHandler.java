@@ -44,4 +44,26 @@ public class GlobalExceptionHandler {
                 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ExceptionHandler(InsecureFileException.class)
+    public ResponseEntity<AuthDto.ErrorResponse> handleInsecureFileException(InsecureFileException ex) {
+        AuthDto.ErrorResponse error = AuthDto.ErrorResponse.builder()
+                .message(ex.getMessage())
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+                
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(VirusDetectedException.class)
+    public ResponseEntity<AuthDto.ErrorResponse> handleVirusDetectedException(VirusDetectedException ex) {
+        AuthDto.ErrorResponse error = AuthDto.ErrorResponse.builder()
+                .message(ex.getMessage())
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

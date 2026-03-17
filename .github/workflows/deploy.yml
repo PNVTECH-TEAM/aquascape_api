@@ -36,12 +36,24 @@ jobs:
         username: ${{ secrets.GCP_VM_USER }}
         key: ${{ secrets.GCP_SSH_KEY }}
         script: |
+          docker network create auth-network || true
           docker stop aquascape-api || true
           docker rm aquascape-api || true
-          docker system prune -af || true
+          docker system prune -f || true
+          
+          # Khởi động ClamAV nếu chưa có
+          if [ ! "$(docker ps -q -f name=aquascape-clamav)" ]; then
+              if [ "$(docker ps -aq -f name=aquascape-clamav)" ]; then
+                  docker start aquascape-clamav
+              else
+                  docker run -d --name aquascape-clamav --network auth-network --restart always clamav/clamav:latest
+              fi
+          fi
+
           docker pull ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
           docker run -d \
             --name aquascape-api \
+            --network auth-network \
             --restart always \
             -v /tmp:/tmp \
             -p 8080:8080 \
@@ -54,4 +66,6 @@ jobs:
             -e REDIS_PORT="${{ secrets.REDIS_PORT }}" \
             -e REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
             -e REDIS_SSL="${{ secrets.REDIS_SSL }}" \
+            -e CLAMAV_HOST="aquascape-clamav" \
+            -e CLAMAV_PORT="3310" \
             ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
