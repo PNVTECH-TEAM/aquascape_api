@@ -2,7 +2,7 @@ name: Build and Deploy to Render
 
 on:
   push:
-    branches: [ 'main', 'develop', 'feature/PNVTECH-128-api-tank-specific-select' ]
+    branches: [ 'main', 'develop', 'feature/PNVTECH-128-api-tank-specific-select', 'release/PNVTECH-154-checking-prior-production' ]
 
 jobs:
   build-and-deploy:

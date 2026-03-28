@@ -38,4 +38,5 @@ application-dev.properties
 
 *.md
 *.env
+*.txt
 

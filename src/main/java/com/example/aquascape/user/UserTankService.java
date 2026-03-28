@@ -46,7 +46,7 @@ public class UserTankService {
         return layouts.stream().map(layout -> TankMetadataDto.builder()
                 .layoutId(layout.getId().toString())
                 .tankId(layout.getTank().getId().toString())
-                .tankName(layout.getTank().getName())
+                .tankName(layout.getLayoutName() != null ? layout.getLayoutName() : layout.getTank().getName())
                 .version(layout.getVersion())
                 .previewImageUrl(layout.getPreviewImageUrl())
                 .savedAt(layout.getSavedAt())
@@ -200,6 +200,7 @@ public class UserTankService {
         layout.setTank(tank);
         layout.setVersion(tank.getLatestLayoutVersion());
         layout.setPreviewImageUrl(request.getPreviewImageUrl());
+        layout.setLayoutName(request.getName() != null ? request.getName() : tank.getName());
         layout = tankLayoutRepository.save(layout);
 
         if (request.getItems() != null && !request.getItems().isEmpty()) {

@@ -39,6 +39,9 @@ public class TankLayout {
     @Column(name = "saved_at", columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime savedAt;
 
+    @Column(name = "layout_name", length = 120)
+    private String layoutName;
+
     @PrePersist
     protected void onCreate() {
         if (savedAt == null) {
