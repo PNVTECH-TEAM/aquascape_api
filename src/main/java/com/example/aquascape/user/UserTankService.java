@@ -23,17 +23,20 @@ public class UserTankService {
     private final TankLayoutItemRepository tankLayoutItemRepository;
     private final TankPresetRepository tankPresetRepository;
     private final AquariumCatalogRepository catalogRepository;
+    private final com.example.aquascape.storage.AzureStorageService azureStorageService;
 
     public UserTankService(TankRepository tankRepository,
                            TankLayoutRepository tankLayoutRepository,
                            TankLayoutItemRepository tankLayoutItemRepository,
                            TankPresetRepository tankPresetRepository,
-                           AquariumCatalogRepository catalogRepository) {
+                           AquariumCatalogRepository catalogRepository,
+                           com.example.aquascape.storage.AzureStorageService azureStorageService) {
         this.tankRepository = tankRepository;
         this.tankLayoutRepository = tankLayoutRepository;
         this.tankLayoutItemRepository = tankLayoutItemRepository;
         this.tankPresetRepository = tankPresetRepository;
         this.catalogRepository = catalogRepository;
+        this.azureStorageService = azureStorageService;
     }
 
     public List<TankMetadataDto> getUserTankVersions(Long userId, String presetId) {
@@ -48,7 +51,7 @@ public class UserTankService {
                 .tankId(layout.getTank().getId().toString())
                 .tankName(layout.getLayoutName() != null ? layout.getLayoutName() : layout.getTank().getName())
                 .version(layout.getVersion())
-                .previewImageUrl(layout.getPreviewImageUrl())
+                .previewImageUrl(layout.getPreviewImageUrl() != null ? layout.getPreviewImageUrl().replace("%2F", "/") : null)
                 .savedAt(layout.getSavedAt())
                 .build()
         ).collect(Collectors.toList());
@@ -76,7 +79,7 @@ public class UserTankService {
                 TankLayoutDto layoutDto = TankLayoutDto.builder()
                         .id(layout.getId().toString())
                         .version(layout.getVersion())
-                        .previewImageUrl(layout.getPreviewImageUrl())
+                        .previewImageUrl(layout.getPreviewImageUrl() != null ? layout.getPreviewImageUrl().replace("%2F", "/") : null)
                         .tankLayoutItems(items.stream().map(this::mapLayoutItem).collect(Collectors.toList()))
                         .build();
 
@@ -101,7 +104,7 @@ public class UserTankService {
         return TankLayoutDto.builder()
                 .id(layout.getId().toString())
                 .version(layout.getVersion())
-                .previewImageUrl(layout.getPreviewImageUrl())
+                .previewImageUrl(layout.getPreviewImageUrl() != null ? layout.getPreviewImageUrl().replace("%2F", "/") : null)
                 .tankLayoutItems(items.stream().map(this::mapLayoutItem).collect(Collectors.toList()))
                 .build();
     }
@@ -168,6 +171,24 @@ public class UserTankService {
 
     @org.springframework.cache.annotation.CacheEvict(value = "user_tanks", allEntries = true)
     public UserTankDto saveUserTank(Long userId, SaveTankRequest request) {
+        String finalPreviewUrl = request.getPreviewImageUrl();
+        if (finalPreviewUrl != null && finalPreviewUrl.startsWith("data:image")) {
+            String[] parts = finalPreviewUrl.split(",");
+            if (parts.length > 1) {
+                try {
+                    byte[] imageBytes = java.util.Base64.getDecoder().decode(parts[1]);
+                    String extension = ".png"; 
+                    if (parts[0].contains("jpeg") || parts[0].contains("jpg")) extension = ".jpg";
+                    else if (parts[0].contains("webp")) extension = ".webp";
+                    
+                    String fileName = "tank-previews/" + userId + "/" + java.util.UUID.randomUUID().toString() + extension;
+                    finalPreviewUrl = azureStorageService.uploadFile(imageBytes, fileName);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to upload base64 image to Azure Storage", e);
+                }
+            }
+        }
+
         Tank tank;
         if (request.getId() != null && !request.getId().isEmpty()) {
             tank = tankRepository.findById(UUID.fromString(request.getId()))
@@ -199,7 +220,7 @@ public class UserTankService {
         TankLayout layout = new TankLayout();
         layout.setTank(tank);
         layout.setVersion(tank.getLatestLayoutVersion());
-        layout.setPreviewImageUrl(request.getPreviewImageUrl());
+        layout.setPreviewImageUrl(finalPreviewUrl);
         layout.setLayoutName(request.getName() != null ? request.getName() : tank.getName());
         layout = tankLayoutRepository.save(layout);
 

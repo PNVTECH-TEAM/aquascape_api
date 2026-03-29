@@ -55,7 +55,7 @@ public class AzureStorageService {
             blobClient.upload(inputStream, content.length, true);
         }
 
-        return blobClient.getBlobUrl();
+        return blobClient.getBlobUrl().replace("%2F", "/");
     }
     public void deleteFile(String fileUrl) {
         if (fileUrl == null || fileUrl.isEmpty()) {
