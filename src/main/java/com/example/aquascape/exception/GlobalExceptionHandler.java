@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-@CrossOrigin(origins = "http://localhost:5173", maxAge = 3600)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

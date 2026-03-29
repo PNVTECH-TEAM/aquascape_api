@@ -1,4 +1,4 @@
-name: Build and Deploy to Render
+name: Build and Deploy to GCP VM
 
 on:
   push:
@@ -46,6 +46,11 @@ jobs:
             -e SPRING_DATASOURCE_URL="${{ secrets.DATABASE_URL }}" \
             -e SPRING_DATASOURCE_USERNAME="${{ secrets.DATABASE_USERNAME }}" \
             -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}" \
+            -e SPRING_DATA_REDIS_HOST="${{ secrets.REDIS_HOST }}" \
+            -e SPRING_DATA_REDIS_PORT="${{ secrets.REDIS_PORT }}" \
+            -e SPRING_DATA_REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}" \
+            -e SPRING_DATA_REDIS_SSL_ENABLED="${{ secrets.REDIS_SSL }}" \
             -e AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             -e AZURE_STORAGE_CONTAINER_NAME="${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             ${{ secrets.DOCKER_USERNAME }}/aquascape-api:latest
+          docker image prune -f

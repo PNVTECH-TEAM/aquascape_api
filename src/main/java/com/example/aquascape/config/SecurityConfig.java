@@ -51,7 +51,9 @@ public class SecurityConfig {
             "http://127.0.0.1:5001", 
             "http://localhost:3000",
             "http://localhost:5173", 
-            "https://your-aquascape-web.com"
+            "https://your-aquascape-web.com",
+            "https://aquascape-pnv.shop",
+            "https://www.aquascape-pnv.shop"
         ));
         
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
